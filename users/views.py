@@ -42,20 +42,10 @@ class UserDetailView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
-# class UpdateUserView(generics.UpdateAPIView):
-#     queryset = CustomUser.objects.all()
-#     serializer_class = UserSerializer
-#     permission_classes = [IsAuthenticated]
-
-# class BlogUserAuthView(APIView):
-#     permission_classes = [AllowAny]
-
-#     def post(self, request):
-#         username = request.data.get("username")
-#         phone = request.data.get("phone")
-#         try:
-#             user = CustomUser.objects.get(username=username, phone=phone)
-#             return Response({"status": "success", "user_id": user.id})
-#         except CustomUser.DoesNotExist:
-#             return Response({"status": "error", "message": "Invalid credentials"}, status=400)
-
+    def get_object(self):
+        obj = super().get_object()
+        if self.request.user.is_superuser or obj == self.request.user:
+            return obj
+        else:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied(detail="You are not allowed")
